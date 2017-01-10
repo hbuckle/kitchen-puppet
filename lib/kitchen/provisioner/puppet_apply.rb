@@ -235,12 +235,8 @@ module Kitchen
               } else {
                   $MsiUrl = "https://downloads.puppetlabs.com/windows/puppet-#{puppet_windows_version}${architecture}.msi"
               }
-              if http_proxy
-                wget $MsiUrl -UseBasicParsing -OutFile "C:/puppet.msi" -Proxy #{http_proxy}
-                $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', 'C:\\puppet.msi'
-              else
-                $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', $MsiUrl
-              end
+              wget $MsiUrl -UseBasicParsing -OutFile "C:/puppet.msi" #{posh_proxy_parm}
+              $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', 'C:\\puppet.msi'
               if ($process.ExitCode -ne 0) {
                   Write-Host "Installer failed."
                   Exit 1
@@ -332,12 +328,8 @@ module Kitchen
             } else {
                 $MsiUrl = "https://downloads.puppetlabs.com/windows/puppet-agent-#{puppet_windows_version}-${architecture}.msi"
             }
-            if http_proxy
-              wget $MsiUrl -UseBasicParsing -OutFile "C:/puppet.msi" -Proxy #{http_proxy}
-              $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', 'C:\\puppet.msi'
-            else
-              $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', $MsiUrl
-            end
+            wget $MsiUrl -UseBasicParsing -OutFile "C:/puppet-agent.msi" #{posh_proxy_parm}
+            $process = Start-Process -FilePath msiexec.exe -Wait -PassThru -ArgumentList '/qn', '/norestart', '/i', 'C:\\puppet-agent.msi'
             if ($process.ExitCode -ne 0) {
                 Write-Host "Installer failed."
                 Exit 1
@@ -1059,6 +1051,10 @@ module Kitchen
         p = http_proxy ? "-e http_proxy=#{http_proxy}" : nil
         s = https_proxy ? "-e https_proxy=#{https_proxy}" : nil
         p || s ? "-e use_proxy=yes #{p} #{s}" : nil
+      end
+
+      def posh_proxy_parm
+        http_proxy ? "-Proxy #{http_proxy}" : nil
       end
 
       def export_http_proxy_parm
